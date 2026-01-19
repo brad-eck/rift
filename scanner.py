@@ -55,6 +55,50 @@ class ComplianceCheck:
 class ScanResult:
     """Container for scan results"""
 
+    def __init__(self, target: str, framework: str):
+        self.target = target
+        self.framework = framework
+        self.scan_time = datetime.now().isoformat()
+        self.checks: List[ComplianceCheck] = []
+        self.summary = {
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "errors": 0,
+            "not_run": 0
+        }
+
+    def add_check(self, check: ComplianceCheck):
+        """Add a check result"""
+        self.checks.append(check)
+        self.summary["total"] += 1
+
+        if check.status == "PASS":
+            self.summary["passed"] += 1
+        elif check.status == "FAIL":
+            self.summary["failed"] += 1
+        elif check.status == "ERROR":
+            self.summary["errors"] += 1
+        else:
+            self.summary["not_run"] += 1
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert results to dictionary"""
+        return {
+            "target": self.target,
+            "framework": self.framework,
+            "scan_time": self.scan_time,
+            "checks": [check.to_dict() for check in self.checks],
+            "summary": self.summary
+        }
+    
+    def get_compliance_score(self) -> float:
+        """Calculate compliance percentage"""
+        total_applicable = self.summary["passed"] + self.summary["failed"]
+        if total_applicable == 0:
+            return 0.0
+        return (self.summary["passed"] / total_applicable) * 100
+
 class ComplianceScanner:
     """Main scanner orchestrator"""
 
