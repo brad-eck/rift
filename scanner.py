@@ -145,6 +145,123 @@ class ComplianceScanner:
 class ReportGenerator:
     """Generate reports in various formats"""
 
+    @staticmethod
+    def generate_json(result: ScanResult, output_path: Path):
+        """Generate JSON report"""
+        with open(output_path, 'w') as f:
+            json.dump(result.to_dict(), f, indent=2)
+        logger.info(f"JSON report saved to {output_path}")
+
+    @staticmethod
+    def generate_html(result: ScanResult, output_path: Path):
+        """Generate HTML report"""
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security Compliance Report</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }}
+        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+        h1 {{ color: #333; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }}
+        .summary {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0; }}
+        .summary-card {{ background: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #4CAF50; }}
+        .summary-card h3 {{ margin: 0 0 10px 0; color: #666; font-size: 14px; }}
+        .summary-card .value {{ font-size: 32px; font-weight: bold; color: #333; }}
+        .compliance-score {{ font-size: 48px; font-weight: bold; color: #4CAF50; text-align: center; margin: 20px 0; }}
+        .check {{ background: #fff; border: 1px solid #ddd; margin: 15px 0; padding: 20px; border-radius: 5px; }}
+        .check.FAIL {{ border-left: 4px solid #f44336; }}
+        .check.PASS {{ border-left: 4px solid #4CAF50; }}
+        .check.ERROR {{ border-left: 4px solid #ff9800; }}
+        .severity {{ display: inline-block; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; }}
+        .severity.CRITICAL {{ background: #f44336; color: white; }}
+        .severity.HIGH {{ background: #ff9800; color: white; }}
+        .severity.MEDIUM {{ background: #ffc107; color: black; }}
+        .severity.LOW {{ background: #8bc34a; color: white; }}
+        .status {{ display: inline-block; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; margin-left: 10px; }}
+        .status.PASS {{ background: #4CAF50; color: white; }}
+        .status.FAIL {{ background: #f44336; color: white; }}
+        .status.ERROR {{ background: #ff9800; color: white; }}
+        .findings {{ background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 3px; }}
+        .remediation {{ background: #e3f2fd; padding: 10px; margin: 10px 0; border-radius: 3px; border-left: 3px solid #2196F3; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Security Compliance Report</h1>
+        <p><strong>Target:</strong> {result.target}</p>
+        <p><strong>Framework:</strong> {result.framework}</p>
+        <p><strong>Scan Time:</strong> {result.scan_time}</p>
+        
+        <div class="compliance-score">
+            {result.get_compliance_score():.1f}% Compliant
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Checks</h3>
+                <div class="value">{result.summary['total']}</div>
+            </div>
+            <div class="summary-card" style="border-left-color: #4CAF50;">
+                <h3>Passed</h3>
+                <div class="value" style="color: #4CAF50;">{result.summary['passed']}</div>
+            </div>
+            <div class="summary-card" style="border-left-color: #f44336;">
+                <h3>Failed</h3>
+                <div class="value" style="color: #f44336;">{result.summary['failed']}</div>
+            </div>
+            <div class="summary-card" style="border-left-color: #ff9800;">
+                <h3>Errors</h3>
+                <div class="value" style="color: #ff9800;">{result.summary['errors']}</div>
+            </div>
+        </div>
+        
+        <h2>Detailed Results</h2>
+"""
+        
+        for check in result.checks:
+            findings_html = ""
+            if check.findings:
+                findings_html = f"""
+                <div class="findings">
+                    <strong>Findings:</strong><br>
+                    {'<br>'.join(check.findings)}
+                </div>
+                """
+            
+            remediation_html = ""
+            if check.remediation:
+                remediation_html = f"""
+                <div class="remediation">
+                    <strong>Remediation:</strong><br>
+                    {check.remediation}
+                </div>
+                """
+            
+            html_content += f"""
+        <div class="check {check.status}">
+            <h3>
+                {check.check_id}: {check.title}
+                <span class="severity {check.severity}">{check.severity}</span>
+                <span class="status {check.status}">{check.status}</span>
+            </h3>
+            <p><strong>Control:</strong> {check.framework} {check.control_id}</p>
+            <p>{check.description}</p>
+            {findings_html}
+            {remediation_html}
+        </div>
+"""
+        
+        html_content += """
+    </div>
+</body>
+</html>
+"""
+        
+        with open(output_path, 'w') as f:
+            f.write(html_content)
+        logger.info(f"HTML report saved to {output_path}")
+
 def main():
     pass
 
