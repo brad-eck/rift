@@ -291,7 +291,80 @@ class ReportGenerator:
                     print(f"  Findings: {check.findings[0]}")
 
 def main():
-    pass
+    parser = argparse.ArgumentParser(
+        description="Security Compliance Scanner - Audit system configurations"
+    )
+    parser.add_argument(
+        '--framework',
+        choices=['CIS', 'NIST', 'STIG'],
+        default='CIS',
+        help='Security framework to scan against'
+    )
+    parser.add_argument(
+        '--category',
+        action='append',
+        help='Specific check categories to run (can be specified multiple times)'
+    )
+    parser.add_argument(
+        '--output',
+        default='compliance_report',
+        help='Output file prefix (without extension)'
+    )
+    parser.add_argument(
+        '--format',
+        choices=['json', 'html', 'both'],
+        default='both',
+        help='Report format'
+    )
+    parser.add_argument(
+        '--verbose',
+        action='store_true',
+        help='Enable verbose logging'
+    )
+    
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    # Initialize scanner
+    scanner = ComplianceScanner(
+        framework=args.framework,
+        check_categories=args.category
+    )
+
+    try:
+        scanner.load_checks()
+    except Exception as e:
+        logger.error(f"Failed to load checks: {str(e)}")
+        sys.exit(1)
+
+    if not scanner.checks:
+        logger.error("No checks loaded. Exiting.")
+        sys.exit(1)
+
+    result = scanner.run_scan()
+
+    output_dir = Path("reports")
+    output_dir.mkdir(exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    if args.format in ['json', 'both']:
+        json_path = output_dir / f"{args.output}_{timestamp}.json"
+        ReportGenerator.generate_json(result, json_path)
+
+    if args.format in ['html', 'both']:
+        html_path = output_dir / f"{args.output}_{timestamp}.html"
+        ReportGenerator.generate_html(result, html_path)
+
+    ReportGenerator.generate_console(result)
+
+    if result.summary['failed'] > 0:
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
