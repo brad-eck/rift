@@ -262,6 +262,34 @@ class ReportGenerator:
             f.write(html_content)
         logger.info(f"HTML report saved to {output_path}")
 
+    @staticmethod
+    def generate_console(result: ScanResult):
+        """Generate console output"""
+        print("\n" + "="*70)
+        print("SECURITY COMPLIANCE REPORT")
+        print("="*70)
+        print(f"Target: {result.target}")
+        print(f"Framework: {result.framework}")
+        print(f"Scan Time: {result.scan_time}")
+        print(f"Compliance Score: {result.get_compliance_score():.1f}%")
+        print("\nSummary:")
+        print(f"  Total Checks: {result.summary['total']}")
+        print(f"  Passed: {result.summary['passed']}")
+        print(f"  Failed: {result.summary['failed']}")
+        print(f"  Errors: {result.summary['errors']}")
+        print("\n" + "="*70)
+
+        # Display failed checks
+        failed_checks = [c for c in result.checks if c.status == "FAIL"]
+        if failed_checks:
+            print(f"\nFAILED CHECKS ({len(failed_checks)}):")
+            print("-"*70)
+            for check in failed_checks:
+                print(f"\n[{check.severity}] {check.check_id}: {check.title}")
+                print(f"  Control: {check.framework} {check.control_id}")
+                if check.findings:
+                    print(f"  Findings: {check.findings[0]}")
+
 def main():
     pass
 
