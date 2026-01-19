@@ -95,7 +95,7 @@ class PasswordPolicyCheck(ComplianceCheck):
             if self.policy_type == "complexity":
                 self._check_complexity()
             elif self.policy_type == "age":
-                self.check_age()
+                self._check_age()
             elif self.policy_type == "history":
                 self._check_history()
         except Exception as e:
