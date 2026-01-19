@@ -12,6 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 import platform
+from checks.linux_cis import get_cis_checks
 
 logging.basicConfig(
     level=logging.INFO,
@@ -101,6 +102,45 @@ class ScanResult:
 
 class ComplianceScanner:
     """Main scanner orchestrator"""
+
+    def __init__(self, framework: str = "CIS", check_categories: List[str] = None):
+        self.framework = framework
+        self.check_categories = check_categories or ["all"]
+        self.checks = List[ComplianceCheck] = []
+
+    def register_check(self, check: ComplianceCheck):
+        """Register a compliance check"""
+        self.checks.append(check)
+
+    def load_checks(self):
+        """Load checks based on framework and categories"""
+        if platform.system() == "Linux":
+            self.checks = get_cis_checks(self.check_categories)
+        else:
+            logger.warning(f"Unsupported platform: {platform.system()}")
+
+    def run_scan(self) -> ScanResult:
+        """Execute all registered checks"""
+        result = ScanResult(
+            target=platform.node(),
+            framework=self.framework
+        )
+
+        logger.info(f"Starting scan with {len(self.checks)} checks...")
+
+        for check in self.checks:
+            try:
+                logger.info(f"Running check: {check.check_id} - {check.title}")
+                check.run()
+                result.add_check(check)
+            except Exception as e:
+                logger.error(f"Error running check {check.check_id}: {str(e)}")
+                check.status = "ERROR"
+                check.findings.append(f"Error: {str(e)}")
+                result.add_check(check)
+
+        logger.info("Scan completed")
+        return result
 
 class ReportGenerator:
     """Generate reports in various formats"""
