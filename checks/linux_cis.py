@@ -77,6 +77,120 @@ class FilePermissionCheck(ComplianceCheck):
 
 class PasswordPolicyCheck(ComplianceCheck):
     """Check password policy settings"""
+    
+    def __init__(self, policy_type: str):
+        super().__init__(
+            check_id=f"PWD_POLICY_{policy_type.upper()}",
+            title=f"Verify password {policy_type} policy",
+            description=f"Ensure strong password {policy_type} requirements are configured",
+            severity="HIGH",
+            framework="CIS",
+            control_id="5.2"
+        )
+        self.policy_type = policy_type
+
+    def run(self):
+        """Check password policy configuration"""
+        try:
+            if self.policy_type == "complexity":
+                self._check_complexity()
+            elif self.policy_type == "age":
+                self.check_age()
+            elif self.policy_type == "history":
+                self._check_history()
+        except Exception as e:
+            self.status = "ERROR"
+            self.findings.append(f"Error checking policy: {str(e)}")
+
+    def _check_complexity(self):
+        """Check password complexity requirements"""
+        pam_file = "/etc/pam.d/common-password"
+
+        if not os.path.exists(pam_file):
+            pam_file = "/etc/pam.d/system-auth"
+
+        if not os.path.exists(pam_file):
+            self.status = "ERROR"
+            self.findings.append("Could not find PAM password configuration file")
+            return
+
+        with open(pam_file, 'r') as f:
+            content = f.read()
+
+        if 'pam_pwquality' not in content and 'pam_cracklib' not in content:
+            self.status = "FAIL"
+            self.findings.append("Password complexity module not configured")
+            self.remediation = "Install and configure libpam-pwquality"
+        else:
+            has_minlen = bool(re.search(r'minlen\s*=\s*\d+', content))
+
+            if not has_minlen:
+                self.status = "FAIL"
+                self.findings.append("Minimum password length not configured")
+                self.remediation = "Add minlen=14 to pam_pwquality configuration"
+            else:
+                self.status = "PASS"
+
+    def _check_age(self):
+        """Check password age requiremnets"""
+        login_defs = "/etc/login.defs"
+
+        if not os.path.exists(login_defs):
+            self.status = "ERROR"
+            self.findings.append(f"{login_defs} not found")
+            return
+        
+        with open(login_defs, 'r') as f:
+            content = f.read()
+
+        issues = []
+
+        max_days_match = re.search(r'^PASS_MAX_DAYS\s+(\d+)', content, re.MULTILINE)
+        if not max_days_match or int(max_days_match.group(1)) > 365:
+            issues.append("PASS_MAX_DAYS not set or too high (should be <=365)")
+
+        min_days_match = re.search(r'^PASS_MIN_DAYS\s+(\d+)', content, re.MULTILINE)
+        if not min_days_match or int(min_days_match.group(1)) < 1:
+            issues.append("PASS_MIN_DAYS not set or too low (should be >=1)")
+
+        warn_age_match = re.search(r'^PASS_WARN_AGE\s+(\d+)', content, re.MULTILINE)
+        if not warn_age_match or int(warn_age_match.group(1)) < 7:
+            issues.append("PASS_WARN_AGE not set or too low (should be >=7)")
+
+        if issues:
+            self.status = "FAIL"
+            self.findings = issues
+            self.remediation = f"Edit {login_defs} and set appropriate values"
+        else:
+            self.status = "PASS"
+
+    def _check_history(self):
+        """Check password history requirements"""
+        pam_file = "/etc/pam.d/common-password"
+
+        if not os.path.exists(pam_file):
+            pam_file = "/etc/pam.d/system-auth"
+
+        if not os.path.exists(pam_file):
+            self.status = "ERROR"
+            self.findings.append("Could not find PAM password configuration file")
+            return
+        
+        with open(pam_file, 'r') as f:
+            content = f.read()
+
+        remember_match = re.search(r'remember\s*=\s*(\d+)', content)
+
+        if not remember_match:
+            self.status = "FAIL"
+            self.findings.append("Password history not configured")
+            self.remediation = "Add 'remember=5' to pam_unix.so line in PAM configuration"
+        elif int(remember_match.group(1)) < 5:
+            self.status = "FAIL"
+            self.findings.append(f"Password history set to {remember_match.group(1)}, should be >=5")
+            self.remediation = "Increase remember value to at least 5"
+        else:
+            self.status = "PASS"
 
 class ServiceCheck(ComplianceCheck):
     """Check if unnecessary services are disabled"""
