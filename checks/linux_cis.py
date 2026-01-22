@@ -195,6 +195,19 @@ class PasswordPolicyCheck(ComplianceCheck):
 class ServiceCheck(ComplianceCheck):
     """Check if unnecessary services are disabled"""
 
+    def __init__(self, service_name: str, should_be_enabled: bool = False):
+        status_text = "enabled" if should_be_enabled else "disabled"
+        super().__init__(
+            check_id=f"SERVICE_{service_name.upper()}",
+            title=f"Ensure {service_name} is {status_text}",
+            description=f"Verify that {service_name} service is {status_text}",
+            severity="MEDIUM",
+            framework="CIS",
+            control_id="CHANGE ME WHEN YOU FIND OUT ID"
+        )
+        self.service_name = service_name
+        self.should_be_enabled = should_be_enabled
+
 class FirewallCheck(ComplianceCheck):
     """Check firewall configuration"""
 
