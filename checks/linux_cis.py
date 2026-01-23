@@ -211,6 +211,16 @@ class ServiceCheck(ComplianceCheck):
 class FirewallCheck(ComplianceCheck):
     """Check firewall configuration"""
 
+    def __init__(self):
+        super().__init__(
+            check_id="FIREWALL_ENABLED",
+            title="Ensure firewall is active"
+            description="Verify that a firewall (iptables, ufw, or firewalld) is enabled",
+            severity="CRITICAL",
+            framework="CIS",
+            control_id="FIX ME"
+        )
+
 class SSHConfigCheck(ComplianceCheck):
     """Check SSH configuration settings"""
 
