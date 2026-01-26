@@ -208,6 +208,45 @@ class ServiceCheck(ComplianceCheck):
         self.service_name = service_name
         self.should_be_enabled = should_be_enabled
 
+    def run(self):
+        """Check service status"""
+        try:
+            result = subprocess.run(
+                ['systemctl', 'is-enabled', self.service_name],
+                capture_output=True,
+                text=True
+            )
+
+            is_enabled = result.returncode == 0
+
+            if is_enabled == self.should_be_enabled:
+                self.status = "PASS"
+            else:
+                self.status = "FAIL"
+                expected = "enabled" if self.should_be_enabled else "disabled"
+                actual = "enabled" if is_enabled else "disabled"
+                self.findings.append(f"Service is {actual}, expected {expected}")
+
+                if self.should_be_enabled:
+                    self.remediation = f"systemctl enable {self.service_name}"
+                else:
+                    self.remediation = f"systemctl disable {self.service_name}"
+
+        except FileNotFoundError:
+
+            try:
+                result = subprocess.run(
+                    ['service', self.service_name, 'status'],
+                    capture_output=True,
+                    text=True
+                )
+
+                self.status = "PASS"
+                self.findings.append("Manual verification recommended")
+            except Exception as e:
+                self.status = "ERROR"
+                self.findings.append(f"Could not check service: {str(e)}")
+
 class FirewallCheck(ComplianceCheck):
     """Check firewall configuration"""
 
