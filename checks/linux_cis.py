@@ -214,7 +214,7 @@ class FirewallCheck(ComplianceCheck):
     def __init__(self):
         super().__init__(
             check_id="FIREWALL_ENABLED",
-            title="Ensure firewall is active"
+            title="Ensure firewall is active",
             description="Verify that a firewall (iptables, ufw, or firewalld) is enabled",
             severity="CRITICAL",
             framework="CIS",
@@ -223,6 +223,18 @@ class FirewallCheck(ComplianceCheck):
 
 class SSHConfigCheck(ComplianceCheck):
     """Check SSH configuration settings"""
+
+    def __init__(self, setting: str, expected_value: str):
+        super().__init__(
+            check_id=f"SSH_{setting.upper()}",
+            title=f"Ensure SSh {setting} is properly configured",
+            description=f"Verify SSH {setting} setting",
+            severity="HIGH",
+            framework="CIS",
+            control_id="FIX ME"
+        )
+        self.setting = setting
+        self.expected_value = expected_value
 
 class AuditdCheck(ComplianceCheck):
     """Check if auditd is installed and enabled"""
