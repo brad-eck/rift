@@ -238,3 +238,13 @@ class SSHConfigCheck(ComplianceCheck):
 
 class AuditdCheck(ComplianceCheck):
     """Check if auditd is installed and enabled"""
+
+    def __init__(self):
+        super().__init__(
+            check_id="AUDITD_ENABLED",
+            title="Ensure auditd service is enabled and running",
+            description="Verify system auditing is configured and active",
+            severity="HIGH",
+            framework="CIS",
+            control_id="FIX ME"
+        )
