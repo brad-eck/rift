@@ -1,6 +1,6 @@
 # Rift - Security Compliance Scanning tool (IN PROG...)
 
-**Rift** is a fully comprehensive scanner that servers as a go to resource to determine if your personal workstation is compliant with common security frameworks.  
+**Rift** is a fully comprehensive scanner that serves as a go to resource to determine if your personal workstation is compliant with common security frameworks.  
   
 This project is currently under development.
 
