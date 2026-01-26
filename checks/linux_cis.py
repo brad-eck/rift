@@ -260,6 +260,40 @@ class FirewallCheck(ComplianceCheck):
             control_id="FIX ME"
         )
 
+    def run(self):
+        """Check if any fireall is active"""
+        firewall_found = False
+
+        try:
+            result = subprocess.run(
+                ['ufw', 'status'],
+                capture_output=True,
+                text=True
+            )
+            if 'Status: active' in result.stdout:
+                firewall_found = True
+                self.status = "PASS"
+                self.findings.append("UFW is active")
+                return
+        except FileNotFoundError:
+            pass
+
+        try:
+            result = subprocess.run(
+                ['firewall-cmd', '--state'],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0:
+                firewall_found = True
+                self.status = "PASS"
+                self.findings.append("firewalld is active")
+                return
+        except FileNotFoundError:
+            pass
+
+        
+
 class SSHConfigCheck(ComplianceCheck):
     """Check SSH configuration settings"""
 
