@@ -292,7 +292,19 @@ class FirewallCheck(ComplianceCheck):
         except FileNotFoundError:
             pass
 
-        
+        try:
+            result = subprocess.run(
+                ['iptables', '-L'],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                firewall_found = True
+                self.status = "PASS"
+                self.findings.append("iptables rules are configured")
+                return
+        except FileNotFoundError:
+            pass
 
 class SSHConfigCheck(ComplianceCheck):
     """Check SSH configuration settings"""
