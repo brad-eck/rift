@@ -306,6 +306,11 @@ class FirewallCheck(ComplianceCheck):
         except FileNotFoundError:
             pass
 
+        if not firewall_found:
+            self.status = "FAIL"
+            self.findings.append("No active firewall detected")
+            self.remediation = "Install and enable ufw, firewalld, or configure iptables"
+
 class SSHConfigCheck(ComplianceCheck):
     """Check SSH configuration settings"""
 
