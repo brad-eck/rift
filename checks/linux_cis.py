@@ -436,9 +436,9 @@ def get_cis_checks(categories: list[str] = None) -> list[ComplianceCheck]:
         # File permission checks
         checks.extend([
             FilePermissionCheck("/etc/passwd", "644", "root", "root"),
-            FilePermissionCheck("/etc/shadow", "640", "root", "shadow"),
+            FilePermissionCheck("/etc/shadow", "000", "root", "root"),
             FilePermissionCheck("/etc/group", "644", "root", "root"),
-            FilePermissionCheck("/etc/gshadow", "640", "root", "shadow"),
+            FilePermissionCheck("/etc/gshadow", "000", "root", "root"),
             FilePermissionCheck("/etc/ssh/sshd_config", "600", "root", "root"),
         ])
     
