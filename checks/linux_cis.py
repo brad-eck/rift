@@ -7,7 +7,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any
 import pwd
 import grp
 
@@ -339,7 +339,6 @@ class SSHConfigCheck(ComplianceCheck):
             with open(ssh_config, 'r') as f:
                 content = f.read()
             
-            # Look for the setting
             pattern = rf'^{self.setting}\s+(.+)$'
             match = re.search(pattern, content, re.MULTILINE | re.IGNORECASE)
             
@@ -374,3 +373,106 @@ class AuditdCheck(ComplianceCheck):
             framework="CIS",
             control_id="FIX ME"
         )
+
+    def run(self):
+        """Check auditd status"""
+        try:
+            result = subprocess.run(
+                ['which', 'auditd'],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode != 0:
+                self.status = "FAIL"
+                self.findings.append("auditd is not installed")
+                self.remediation = "Install auditd package"
+                return
+            
+            result = subprocess.run(
+                ['systemctl', 'is-enabled', 'auditd'],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode != 0:
+                self.status = "FAIL"
+                self.findings.append("auditd is not enabled")
+                self.remediation = "Run: systemctl enable auditd"
+                return
+            
+            result = subprocess.run(
+                ['systemctl', 'is-active', 'auditd'],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode != 0:
+                self.status = "FAIL"
+                self.findings.append("auditd is not running")
+                self.remediation = "Run: systemctl start auditd"
+            else:
+                self.status = "PASS"
+                
+        except Exception as e:
+            self.status = "ERROR"
+            self.findings.append(f"Error checking auditd: {str(e)}")
+
+def get_cis_checks(categories: list[str] = None) -> list[ComplianceCheck]:
+    """
+    Get list of CIS compliance checks
+    
+    Categories:
+    - all: All checks
+    - filesystem: File system permissions
+    - services: Service configuration
+    - network: Network and firewall
+    - access: Access control and authentication
+    - logging: Logging and auditing
+    """
+    checks = []
+    
+    if not categories or 'all' in categories or 'filesystem' in categories:
+        # File permission checks
+        checks.extend([
+            FilePermissionCheck("/etc/passwd", "644", "root", "root"),
+            FilePermissionCheck("/etc/shadow", "640", "root", "shadow"),
+            FilePermissionCheck("/etc/group", "644", "root", "root"),
+            FilePermissionCheck("/etc/gshadow", "640", "root", "shadow"),
+            FilePermissionCheck("/etc/ssh/sshd_config", "600", "root", "root"),
+        ])
+    
+    if not categories or 'all' in categories or 'access' in categories:
+        # Password policy checks
+        checks.extend([
+            PasswordPolicyCheck("complexity"),
+            PasswordPolicyCheck("age"),
+            PasswordPolicyCheck("history"),
+        ])
+        
+        # SSH configuration checks
+        checks.extend([
+            SSHConfigCheck("PermitRootLogin", "no"),
+            SSHConfigCheck("PasswordAuthentication", "no"),
+            SSHConfigCheck("PermitEmptyPasswords", "no"),
+            SSHConfigCheck("Protocol", "2"),
+        ])
+    
+    if not categories or 'all' in categories or 'services' in categories:
+        # Service checks - these services should generally be disabled
+        checks.extend([
+            ServiceCheck("avahi-daemon", should_be_enabled=False),
+            ServiceCheck("cups", should_be_enabled=False),
+            ServiceCheck("isc-dhcp-server", should_be_enabled=False),
+            ServiceCheck("isc-dhcp-server6", should_be_enabled=False),
+        ])
+    
+    if not categories or 'all' in categories or 'network' in categories:
+        # Network and firewall checks
+        checks.append(FirewallCheck())
+    
+    if not categories or 'all' in categories or 'logging' in categories:
+        # Logging and auditing
+        checks.append(AuditdCheck())
+    
+    return checks

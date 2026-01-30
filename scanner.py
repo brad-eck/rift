@@ -10,7 +10,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any
 import platform
 
 logging.basicConfig(
@@ -34,11 +34,11 @@ class ComplianceCheck:
         self.findings = []
         self.remediation = ""
 
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         """Execute the check - to be implemented by subclasses"""
         raise NotImplementedError("Subclasses must implement run()")
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert check results to dictionary"""
         return {
             "check_id": self.check_id,
@@ -59,7 +59,7 @@ class ScanResult:
         self.target = target
         self.framework = framework
         self.scan_time = datetime.now().isoformat()
-        self.checks: List[ComplianceCheck] = []
+        self.checks: list[ComplianceCheck] = []
         self.summary = {
             "total": 0,
             "passed": 0,
@@ -82,7 +82,7 @@ class ScanResult:
         else:
             self.summary["not_run"] += 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert results to dictionary"""
         return {
             "target": self.target,
@@ -102,10 +102,10 @@ class ScanResult:
 class ComplianceScanner:
     """Main scanner orchestrator"""
 
-    def __init__(self, framework: str = "CIS", check_categories: List[str] = None):
+    def __init__(self, framework: str = "CIS", check_categories: list[str] = None):
         self.framework = framework
         self.check_categories = check_categories or ["all"]
-        self.checks = List[ComplianceCheck] = []
+        self.checks: list[ComplianceCheck] = []
 
     def register_check(self, check: ComplianceCheck):
         """Register a compliance check"""
