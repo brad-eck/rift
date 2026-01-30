@@ -2,7 +2,7 @@
 
 First off, thank you for considering contributing to Security Compliance Scanner! It's people like you that make this tool better for the security community.
 
-## 🎯 Project Vision
+## Project Vision
 
 This project aims to provide a free, open-source, and extensible security compliance scanning tool that helps organizations and individuals audit their systems against industry-standard security frameworks. We value:
 
