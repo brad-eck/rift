@@ -1,6 +1,6 @@
-# Contributing to Security Compliance Scanner
+# Contributing to Rift
 
-First off, thank you for considering contributing to Security Compliance Scanner! It's people like you that make this tool better for the security community.
+First off, thank you for considering contributing to Rift! It's people like you that make this tool better for the security community.
 
 ## Project Vision
 
