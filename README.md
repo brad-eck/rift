@@ -149,7 +149,7 @@ The overall compliance percentage is calculated as:
 - **MEDIUM** 🟡 - Moderate security issue, address during maintenance windows
 - **LOW** 🟢 - Minor security enhancement, address as resources permit
 
-## 📊 Sample Output
+## Sample Output
 
 ### Console Summary
 ```
@@ -235,40 +235,22 @@ python3 -m unittest tests.test_checks
 - [ ] HIPAA security rule mappings
 - [ ] Custom framework definition via YAML
 
-## 🤝 Contributing
-
-This is currently a portfolio project, but contributions, suggestions, and feedback are welcome!
-
-### How to Contribute
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-check`)
-3. Implement your changes with tests
-4. Ensure all tests pass
-5. Submit a pull request with detailed description
-
-### Contribution Ideas
-- New security check implementations
-- Additional framework support
-- Documentation improvements
-- Bug fixes and optimizations
-- Test coverage expansion
-
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **CIS (Center for Internet Security)** - For comprehensive security benchmarks
 - **NIST** - For cybersecurity framework guidance
 - **Linux security community** - For hardening best practices
 
-## 📬 Contact
+## Contact
 
 **Project Maintainer:** [Brady Eckman]
 - LinkedIn: [Brady Eckman](https://linkedin.com/in/brady-eckman)
 
-## 🔒 Security Considerations
+## Security Considerations
 
 ### Important Notes
 - This tool requires root/sudo privileges to access security-sensitive files
