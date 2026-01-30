@@ -326,6 +326,42 @@ class SSHConfigCheck(ComplianceCheck):
         self.setting = setting
         self.expected_value = expected_value
 
+    def run(self):
+        """Check SSH configuration"""
+        ssh_config = "/etc/ssh/sshd_config"
+        
+        if not os.path.exists(ssh_config):
+            self.status = "ERROR"
+            self.findings.append(f"{ssh_config} not found")
+            return
+        
+        try:
+            with open(ssh_config, 'r') as f:
+                content = f.read()
+            
+            # Look for the setting
+            pattern = rf'^{self.setting}\s+(.+)$'
+            match = re.search(pattern, content, re.MULTILINE | re.IGNORECASE)
+            
+            if not match:
+                self.status = "FAIL"
+                self.findings.append(f"{self.setting} not explicitly set")
+                self.remediation = f"Add '{self.setting} {self.expected_value}' to {ssh_config}"
+            else:
+                actual_value = match.group(1).strip()
+                if actual_value.lower() == self.expected_value.lower():
+                    self.status = "PASS"
+                else:
+                    self.status = "FAIL"
+                    self.findings.append(
+                        f"{self.setting} is set to '{actual_value}', expected '{self.expected_value}'"
+                    )
+                    self.remediation = f"Set '{self.setting} {self.expected_value}' in {ssh_config}"
+                    
+        except Exception as e:
+            self.status = "ERROR"
+            self.findings.append(f"Error reading SSH config: {str(e)}")
+
 class AuditdCheck(ComplianceCheck):
     """Check if auditd is installed and enabled"""
 
