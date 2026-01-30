@@ -77,7 +77,7 @@ Unsure where to begin? Look for issues labeled:
 ```bash
 # Fork the repository on GitHub, then:
 git clone https://github.com/brad-eck/rift.git
-cd security-compliance-scanner
+cd rift
 
 # Add upstream remote
 git remote add upstream https://github.com/ORIGINAL_OWNER/rift.git
