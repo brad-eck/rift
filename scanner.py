@@ -12,7 +12,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 import platform
-from checks.linux_cis import get_cis_checks
 
 logging.basicConfig(
     level=logging.INFO,
@@ -114,6 +113,8 @@ class ComplianceScanner:
 
     def load_checks(self):
         """Load checks based on framework and categories"""
+        from checks.linux_cis import get_cis_checks
+        
         if platform.system() == "Linux":
             self.checks = get_cis_checks(self.check_categories)
         else:
