@@ -203,7 +203,7 @@ class ServiceCheck(ComplianceCheck):
             description=f"Verify that {service_name} service is {status_text}",
             severity="MEDIUM",
             framework="CIS",
-            control_id="CHANGE ME WHEN YOU FIND OUT ID"
+            control_id="4.8"
         )
         self.service_name = service_name
         self.should_be_enabled = should_be_enabled
@@ -257,7 +257,7 @@ class FirewallCheck(ComplianceCheck):
             description="Verify that a firewall (iptables, ufw, or firewalld) is enabled",
             severity="CRITICAL",
             framework="CIS",
-            control_id="FIX ME"
+            control_id="4.5"
         )
 
     def run(self):
@@ -317,11 +317,11 @@ class SSHConfigCheck(ComplianceCheck):
     def __init__(self, setting: str, expected_value: str):
         super().__init__(
             check_id=f"SSH_{setting.upper()}",
-            title=f"Ensure SSh {setting} is properly configured",
+            title=f"Ensure SSH {setting} is properly configured",
             description=f"Verify SSH {setting} setting",
             severity="HIGH",
             framework="CIS",
-            control_id="FIX ME"
+            control_id="4.1"
         )
         self.setting = setting
         self.expected_value = expected_value
@@ -371,7 +371,7 @@ class AuditdCheck(ComplianceCheck):
             description="Verify system auditing is configured and active",
             severity="HIGH",
             framework="CIS",
-            control_id="FIX ME"
+            control_id="8.2"
         )
 
     def run(self):

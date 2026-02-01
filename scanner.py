@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Security Compliance Scanner
+Rift
 A modular tool for auditing system configuratiosn against security frameworks
 """
 
