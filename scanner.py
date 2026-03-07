@@ -113,12 +113,18 @@ class ComplianceScanner:
 
     def load_checks(self):
         """Load checks based on framework and categories"""
-        from checks.linux_cis import get_cis_checks
-        
-        if platform.system() == "Linux":
-            self.checks = get_cis_checks(self.check_categories)
-        else:
+        if platform.system() != "Linux":
             logger.warning(f"Unsupported platform: {platform.system()}")
+            return
+
+        if self.framework == "CIS":
+            from checks.linux_cis import get_cis_checks
+            self.checks = get_cis_checks(self.check_categories)
+        elif self.framework == "NIST":
+            from checks.linux_nist import get_nist_checks
+            self.checks = get_nist_checks(self.check_categories)
+        else:
+            logger.warning(f"Framework '{self.framework}' is not yet implemented")
 
     def run_scan(self) -> ScanResult:
         """Execute all registered checks"""

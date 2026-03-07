@@ -9,14 +9,15 @@ A modular, extensible security compliance auditing tool that scans system config
 
 This tool performs automated security compliance auditing of Linux systems against established security benchmarks. It evaluates system configurations, identifies security gaps, and provides actionable remediation guidance through comprehensive reports.
 
-**Current Focus:** CIS (Center for Internet Security) Distribution Independent Linux Benchmark
+**Supported Frameworks:** CIS (Center for Internet Security) Distribution Independent Linux Benchmark and NIST 800-53 Rev. 5
 
 ## Key Features
 
 ### Current Implementation (v0.1)
 
 - ✅ **Modular Architecture** - Extensible check system with base classes for easy expansion
-- ✅ **CIS Benchmark Support** - 18+ implemented checks covering critical security controls
+- ✅ **CIS Benchmark Support** - 18 implemented checks covering critical security controls
+- ✅ **NIST 800-53 Support** - 20 implemented checks mapped to NIST SP 800-53 Rev. 5 controls
 - ✅ **Multiple Report Formats** - JSON, HTML, and console output
 - ✅ **Category-Based Scanning** - Target specific security domains or run comprehensive audits
 - ✅ **Compliance Scoring** - Automatic calculation of compliance percentages
@@ -55,6 +56,38 @@ This tool performs automated security compliance auditing of Linux systems again
 
 #### Logging & Auditing (Category: `logging`)
 - Auditd installation and operational status
+
+### NIST 800-53 Security Checks
+
+#### Filesystem & Permissions (Category: `filesystem`) - AC-3, AC-6
+- `/etc/passwd` permissions and ownership
+- `/etc/shadow` permissions and ownership
+- `/etc/group` permissions and ownership
+- World-writable file detection in `/etc`
+
+#### Access Control & Authentication (Category: `access`) - AC-2, AC-7, AC-8, AC-17, IA-5
+- Unauthorized UID 0 account detection
+- Empty password account detection
+- Login attempt lockout configuration (PAM faillock/tally)
+- Login warning banner verification
+- Password complexity requirements
+- Password aging policies
+- SSH root login prevention
+- SSH empty password prevention
+
+#### Service Configuration (Category: `services`) - CM-7
+- Avahi daemon status
+- CUPS printing service status
+
+#### Network Security (Category: `network`) - SC-5, SC-7, CM-6
+- Firewall detection and status
+- TCP SYN cookies (net.ipv4.tcp_syncookies)
+- ICMP redirect rejection (net.ipv4.conf.all.accept_redirects)
+- IP forwarding disabled (net.ipv4.ip_forward)
+
+#### Logging & Auditing (Category: `logging`) - AU-8, AU-12
+- Auditd installation and operational status
+- Time synchronization (chrony/systemd-timesyncd/NTP)
 
 ## Getting Started
 
@@ -106,8 +139,14 @@ xdg-open reports/compliance_report_*.html
 # Full CIS benchmark scan with HTML and JSON reports
 sudo python3 scanner.py
 
+# NIST 800-53 compliance scan
+sudo python3 scanner.py --framework NIST
+
 # Scan specific security categories
 sudo python3 scanner.py --category filesystem --category access
+
+# NIST scan for specific categories
+sudo python3 scanner.py --framework NIST --category network --category logging
 
 # Generate only JSON output
 sudo python3 scanner.py --format json
@@ -118,6 +157,8 @@ sudo python3 scanner.py --verbose
 # Custom output filename
 sudo python3 scanner.py --output prod_server_audit
 ```
+
+> **Note:** The `--framework` flag currently supports `CIS` and `NIST`. STIG is accepted by the CLI but not yet implemented (see Roadmap).
 
 ### Available Categories
 
@@ -141,7 +182,7 @@ The overall compliance percentage is calculated as:
 - **PASS** ✅ - Configuration meets security requirements
 - **FAIL** ❌ - Security issue detected, remediation needed
 - **ERROR** ⚠️ - Check could not be completed (missing files, permissions, etc.)
-- **NOT_RUN** - Check was skipped
+- **NOT RUN** - Check was skipped
 
 #### Severity Levels
 - **CRITICAL** 🔴 - Immediate security risk, requires urgent remediation
@@ -190,11 +231,12 @@ FAILED CHECKS (3):
 
 ### Project Structure
 ```
-security-compliance-scanner/
+rift/
 ├── scanner.py              # Core scanner engine and orchestration
 ├── checks/
 │   ├── __init__.py
-│   └── linux_cis.py        # CIS benchmark implementations
+│   ├── linux_cis.py        # CIS benchmark implementations
+│   └── linux_nist.py       # NIST 800-53 implementations
 ├── reports/                # Generated scan reports
 ├── tests/                  # Unit and integration tests
 │   ├── __init__.py
@@ -229,7 +271,7 @@ python3 -m unittest tests.test_checks
 - [ ] SELinux/AppArmor status verification
 
 ### Version 0.4 - Multi-Framework Support
-- [ ] NIST 800-53 framework implementation
+- [x] NIST 800-53 framework implementation
 - [ ] STIG (Security Technical Implementation Guide) support
 - [ ] PCI-DSS relevant controls
 - [ ] HIPAA security rule mappings
@@ -264,4 +306,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ by an Infrastructure Security Engineer learning software development**
 
-*Last Updated: January 2026*
+*Last Updated: March 2026*
